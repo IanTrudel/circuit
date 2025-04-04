@@ -53,4 +53,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.ref_name }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            JOBS=4
+            JOBS=1
+          no-cache: true
+          sbom: false
+          provenance: false
