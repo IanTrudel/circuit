@@ -1,5 +1,5 @@
 # Building googletest (gtest)
-FROM ubuntu:22.04 as googletest
+FROM ubuntu:22.04 AS googletest
 
 RUN apt-get update && apt-get install -y \
    cmake g++ git

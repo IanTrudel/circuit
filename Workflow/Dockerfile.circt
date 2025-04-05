@@ -1,7 +1,12 @@
 # Building CIRCT
-ARG BASE_IMAGE
+ARG IMAGE_GOOGLETEST
+ARG IMAGE_LLVM
+ARG IMAGE_SLANG
 
-FROM ${BASE_IMAGE}
+FROM ${IMAGE_GOOGLETEST} AS googletest
+FROM ${IMAGE_LLVM} AS llvm
+FROM ${IMAGE_SLANG} AS slang
+FROM ubuntu:22.04 AS circt
 
 RUN apt-get update && apt-get install -y \
    git cmake ninja-build build-essential g++ \
@@ -24,10 +29,10 @@ RUN git clone https://github.com/llvm/circt.git --depth 1
 WORKDIR /opt/circt
 RUN git submodule update --init --recursive
 
-COPY --from=googletest-builder /opt/googletest/googletest/include /usr/local/include
-COPY --from=googletest-builder /opt/googletest/build/lib /usr/local/lib
-COPY --from=llvm-builder /opt/llvm /opt/llvm
-COPY --from=slang-builder /opt/slang /opt/slang
+COPY --from=googletest /opt/googletest/googletest/include /usr/local/include
+COPY --from=googletest /opt/googletest/build/lib /usr/local/lib
+COPY --from=llvm /opt/llvm /opt/llvm
+COPY --from=slang /opt/slang /opt/slang
 
 RUN /opt/llvm/bin/llvm-lit --version || echo "the world has crumbled, again, sir!"
 

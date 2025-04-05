@@ -1,8 +1,8 @@
 # Building LLVM
 ARG BASE_IMAGE
 
-FROM ${BASE_IMAGE} as googletest
-FROM ubuntu:22.04
+FROM ${BASE_IMAGE} AS googletest
+FROM ubuntu:22.04 AS llvm
 
 ARG LLVM_VERSION=18
 
@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y \
    libedit-dev libncurses5-dev libxml2-dev libsqlite3-dev zlib1g-dev \
    python3 python3-pip python3-setuptools \
    zsh curl unzip doxygen graphviz
+
+RUN pip3 install psutil
 
 # docker pull ghcr.io/iantrudel/circuit:googletest
 COPY --from=googletest /opt/googletest/googletest/include /usr/local/include
@@ -24,7 +26,7 @@ RUN git clone https://github.com/llvm/llvm-project.git --branch release/${LLVM_V
 RUN mkdir -p /opt/llvm-build
 WORKDIR /opt/llvm-build
 RUN cmake -G Ninja ../llvm-project/llvm \
-   -DLLVM_ENABLE_PROJECTS="mlir;clang;clang-tools-extra;lld;lldb" \
+   -DLLVM_ENABLE_PROJECTS="mlir;clang" \
    -DLLVM_TARGETS_TO_BUILD="host" \
    -DCMAKE_BUILD_TYPE=Release \
    -DCMAKE_CXX_STANDARD=17 \
