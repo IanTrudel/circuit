@@ -1,0 +1,58 @@
+# Building CIRCT
+ARG BASE_IMAGE
+
+FROM ${BASE_IMAGE}
+
+RUN apt-get update && apt-get install -y \
+   git cmake ninja-build build-essential g++ \
+   python3 python3-pip python3-setuptools \
+   libedit-dev libncurses5-dev libxml2-dev \
+   zlib1g-dev pkg-config libsqlite3-dev libz3-dev z3
+
+RUN pip3 install pybind11 setuptools lit
+
+ENV LLVM_DIR=/opt/llvm/lib/cmake/llvm
+ENV MLIR_DIR=/opt/llvm/lib/cmake/mlir
+ENV SLANG_DIR=/opt/slang/lib/cmake/slang
+ENV CMAKE_PREFIX_PATH="/opt/install/llvm;/opt/install/slang"
+
+RUN mkdir -p /opt
+
+WORKDIR /opt
+RUN git clone https://github.com/llvm/circt.git --depth 1
+
+WORKDIR /opt/circt
+RUN git submodule update --init --recursive
+
+COPY --from=googletest-builder /opt/googletest/googletest/include /usr/local/include
+COPY --from=googletest-builder /opt/googletest/build/lib /usr/local/lib
+COPY --from=llvm-builder /opt/llvm /opt/llvm
+COPY --from=slang-builder /opt/slang /opt/slang
+
+RUN /opt/llvm/bin/llvm-lit --version || echo "the world has crumbled, again, sir!"
+
+RUN pip install lit
+
+WORKDIR /opt/circt-build
+
+RUN cmake -G Ninja ../circt \
+   -DCMAKE_BUILD_TYPE=Release \
+   -DCIRCT_RELEASE_TAG_ENABLED=ON \
+   -DCMAKE_INSTALL_PREFIX=/opt/circt \
+   -DCMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH \
+   -DCMAKE_CXX_STANDARD=17 \
+   -DLLVM_USE_SPLIT_DWARF=ON \
+   -DCIRCT_SLANG_FRONTEND_ENABLED=ON \
+   -DPYTHON_EXECUTABLE=$(which python3) \
+   -DCIRCT_GTEST_AVAILABLE=ON
+RUN ninja
+RUN ninja check-circt
+RUN ninja install
+
+ENV PATH="/opt/circt/bin:$PATH"
+
+RUN mkdir -p /opt/testsuite/
+COPY testsuite /opt/testsuite/
+RUN firtool /opt/testsuite/firtool/simple.fir > /dev/null
+RUN firtool /opt/testsuite/firtool/full.fir > /dev/null
+

@@ -67,7 +67,7 @@ ENV PATH="/opt/llvm/bin:$PATH"
 RUN diff -qr ./llvm/bin /opt/llvm/bin | grep "^Only in ./llvm/bin" | awk -F': ' '{print $2}' | while read file; do cp "./llvm/bin/$(basename "$file")" /opt/llvm/bin/; done
 
 RUN mkdir -p /opt/testsuite/
-COPY Workflow/testsuite /opt/testsuite/
+COPY testsuite /opt/testsuite/
 RUN mlir-opt /opt/testsuite/llvm/basic.mlir > /dev/null
 
 # Building Slang
@@ -94,7 +94,7 @@ RUN ctest --output-on-failure
 ENV PATH="/opt/slang/bin:$PATH"
 
 RUN mkdir -p /opt/testsuite/
-COPY Workflow/testsuite /opt/testsuite/
+COPY testsuite /opt/testsuite/
 RUN slang /opt/testsuite/sv/adder.sv > /dev/null
 
 # Building CIRCT
@@ -155,7 +155,7 @@ RUN ninja -j$JOBS install
 ENV PATH="/opt/circt/bin:$PATH"
 
 RUN mkdir -p /opt/testsuite/
-COPY Workflow/testsuite /opt/testsuite/
+COPY testsuite /opt/testsuite/
 RUN firtool /opt/testsuite/firtool/simple.fir > /dev/null
 RUN firtool /opt/testsuite/firtool/full.fir > /dev/null
 

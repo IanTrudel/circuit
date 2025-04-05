@@ -13,7 +13,7 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
-  build-and-push:
+  build-googletest:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -46,14 +46,15 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
+          file: Workflow/Dockerfile.goolgetest
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.sha }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.ref_name }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            JOBS=1
-          no-cache: true
-          sbom: false
-          provenance: false
+          cache-from: type=gha
+               cache-to: type=gha,mode/max
+
+      - name: Prune docker images
+        run: docker image prune -a -f
