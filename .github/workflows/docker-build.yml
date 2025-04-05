@@ -97,7 +97,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:llvm
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
-            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:googletest
+            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:googletest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
