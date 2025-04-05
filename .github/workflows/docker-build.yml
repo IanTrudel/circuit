@@ -54,7 +54,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:${{ github.ref_name }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
-          cache-to: type=gha,mode/max
+          cache-to: type=gha,mode=max
 
       - name: Prune docker images
         run: docker image prune -a -f
