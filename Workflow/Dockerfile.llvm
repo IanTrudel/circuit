@@ -1,9 +1,10 @@
 # Building LLVM
-ARG LLVM_VERSION=18
 ARG BASE_IMAGE
 
 FROM ${BASE_IMAGE} as googletest
 FROM ubuntu:22.04
+
+ARG LLVM_VERSION=18
 
 RUN apt-get update && apt-get install -y \
    git cmake ninja-build build-essential pkg-config \
