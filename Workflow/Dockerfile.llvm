@@ -2,7 +2,7 @@
 ARG LLVM_VERSION=18
 ARG BASE_IMAGE
 
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} as googletest
 
 RUN apt-get update && apt-get install -y \
    git cmake ninja-build build-essential pkg-config \
@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
    zsh curl unzip doxygen graphviz
 
 # docker pull ghcr.io/iantrudel/circuit:googletest
-COPY /opt/googletest/googletest/include /usr/local/include
-COPY /opt/googletest/build/lib /usr/local/lib
+COPY --from=googletest /opt/googletest/googletest/include /usr/local/include
+COPY --from=googletest /opt/googletest/build/lib /usr/local/lib
 
 RUN mkdir -p /opt
 WORKDIR /opt
