@@ -11,8 +11,8 @@ RUN apt-get update && apt-get install -y \
    zsh curl unzip doxygen graphviz
 
 # docker pull ghcr.io/iantrudel/circuit:googletest
-COPY --from=ghcr.io/iantrudel/circuit:googletest /opt/googletest/googletest/include /usr/local/include
-COPY --from=ghcr.io/iantrudel/circuit:googletest /opt/googletest/build/lib /usr/local/lib
+COPY --from=${BASE_IMAGE} /opt/googletest/googletest/include /usr/local/include
+COPY --from=${BASE_IMAGE} /opt/googletest/build/lib /usr/local/lib
 
 RUN mkdir -p /opt
 WORKDIR /opt
@@ -48,6 +48,6 @@ ENV PATH="/opt/llvm/bin:$PATH"
 RUN diff -qr ./llvm/bin /opt/llvm/bin | grep "^Only in ./llvm/bin" | awk -F': ' '{print $2}' | while read file; do cp "./llvm/bin/$(basename "$file")" /opt/llvm/bin/; done
 
 RUN mkdir -p /opt/testsuite/
-COPY testsuite /opt/testsuite/
+COPY Workflow/testsuite /opt/testsuite/
 RUN mlir-opt /opt/testsuite/llvm/basic.mlir > /dev/null
 
