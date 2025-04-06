@@ -96,8 +96,6 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:llvm
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:googletest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -142,15 +140,13 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:slang
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            BASE_IMAGE=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:googletest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Prune docker images
         run: docker image prune -a -f
 
-  build-cirt:
+  build-circt:
     runs-on: ubuntu-latest
     needs: 
       - build-googletest
@@ -181,7 +177,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-               images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:cirt
+               images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:circt
       
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -192,10 +188,6 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:circt
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            IMAGE_GOOGLETEST=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:googletest
-            IMAGE_LLVM=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:llvm
-            IMAGE_SLANG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:slang
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -245,11 +237,6 @@ jobs:
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:circuit
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: |
-            IMAGE_GOOGLETEST=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:googletest
-            IMAGE_LLVM=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:llvm
-            IMAGE_SLANG=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:slang
-            IMAGE_CIRCT=${{ env.REGISTRY }}/${{ env.IMAGE_NAME_LC }}:circt
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
