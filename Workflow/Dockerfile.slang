@@ -1,6 +1,4 @@
 # Building Slang
-ARG BASE_IMAGE
-
 FROM ubuntu:22.04 AS slang
 
 RUN apt-get update && apt-get install -y \

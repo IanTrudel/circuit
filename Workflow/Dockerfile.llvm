@@ -1,6 +1,4 @@
 # Building LLVM
-ARG BASE_IMAGE
-
 FROM ghcr.io/iantrudel/circuit:googletest AS googletest
 FROM ubuntu:22.04 AS llvm
 

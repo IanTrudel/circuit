@@ -1,9 +1,4 @@
 # Building the final image
-ARG IMAGE_GOOGLETEST
-ARG IMAGE_LLVM
-ARG IMAGE_SLANG
-ARG IMAGE_CIRCT
-
 FROM ghcr.io/iantrudel/circuit:googletest AS googletest
 FROM ghcr.io/iantrudel/circuit:llvm AS llvm
 FROM ghcr.io/iantrudel/circuit:slang AS slang
