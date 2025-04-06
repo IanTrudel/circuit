@@ -13,5 +13,3 @@ RUN mkdir build
 WORKDIR /opt/googletest/build
 RUN cmake ..
 RUN make && make install
-
-RUN rm -rf /opt/googletest/build
