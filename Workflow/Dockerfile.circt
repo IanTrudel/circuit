@@ -54,10 +54,12 @@ RUN ninja
 RUN ninja check-circt
 RUN ninja install
 
+RUN rm -rf /opt/circt-build
+
 ENV PATH="/opt/circt/bin:$PATH"
 
 RUN mkdir -p /opt/testsuite/
-COPY testsuite /opt/testsuite/
+COPY Workflow/testsuite /opt/testsuite/
 RUN firtool /opt/testsuite/firtool/simple.fir > /dev/null
 RUN firtool /opt/testsuite/firtool/full.fir > /dev/null
 

@@ -19,9 +19,11 @@ RUN cmake --build . --target install
 
 RUN ctest --output-on-failure
 
+RUN rm -rf /opt/slang-build
+
 ENV PATH="/opt/slang/bin:$PATH"
 
 RUN mkdir -p /opt/testsuite/
-COPY testsuite /opt/testsuite/
+COPY Workflow/testsuite /opt/testsuite/
 RUN slang /opt/testsuite/sv/adder.sv > /dev/null
 

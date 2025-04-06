@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y \
 
 RUN pip3 install psutil
 
-# docker pull ghcr.io/iantrudel/circuit:googletest
 COPY --from=googletest /opt/googletest/googletest/include /usr/local/include
 COPY --from=googletest /opt/googletest/build/lib /usr/local/lib
 
@@ -46,6 +45,8 @@ RUN ninja check-llvm
 RUN ninja check-lit
 RUN ninja check-mlir
 RUN ninja install
+
+RUN rm -rf /opt/llvm-build
 
 ENV PATH="/opt/llvm/bin:$PATH"
 
