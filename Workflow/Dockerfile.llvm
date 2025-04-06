@@ -1,7 +1,7 @@
 # Building LLVM
 ARG BASE_IMAGE
 
-FROM ${BASE_IMAGE} AS googletest
+FROM ghcr.io/iantrudel/circuit:googletest AS googletest
 FROM ubuntu:22.04 AS llvm
 
 ARG LLVM_VERSION=18

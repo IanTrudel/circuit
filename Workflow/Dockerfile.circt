@@ -3,9 +3,9 @@ ARG IMAGE_GOOGLETEST
 ARG IMAGE_LLVM
 ARG IMAGE_SLANG
 
-FROM ${IMAGE_GOOGLETEST} AS googletest
-FROM ${IMAGE_LLVM} AS llvm
-FROM ${IMAGE_SLANG} AS slang
+FROM ghcr.io/iantrudel/circuit:googletest AS googletest
+FROM ghcr.io/iantrudel/circuit:llvm AS llvm
+FROM ghcr.io/iantrudel/circuit:slang AS slang
 FROM ubuntu:22.04 AS circt
 
 RUN apt-get update && apt-get install -y \
