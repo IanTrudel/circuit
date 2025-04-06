@@ -104,7 +104,14 @@ jobs:
       - name: Prune docker images
         run: docker image prune -a -f
 
+  build-slang:
+    runs-on: ubuntu-latest
+    needs: build-googletest
+    permissions:
+      contents: read
+      packages: write
 
+    steps:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -122,6 +129,14 @@ jobs:
       - name: Prune docker images
         run: docker image prune -a -f
 
+  build-cirt:
+    runs-on: ubuntu-latest
+    needs: build-googletest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -141,6 +156,14 @@ jobs:
       - name: Prune docker images
         run: docker image prune -a -f
 
+  build-circuit:
+    runs-on: ubuntu-latest
+    needs: build-googletest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:

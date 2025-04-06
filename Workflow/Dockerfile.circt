@@ -53,6 +53,7 @@ RUN cmake -G Ninja ../circt \
 RUN ninja
 RUN ninja check-circt
 RUN ninja install
+RUN ninja -t clean
 
 RUN rm -rf /opt/circt-build
 

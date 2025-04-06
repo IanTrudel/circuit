@@ -45,6 +45,7 @@ RUN ninja check-llvm
 RUN ninja check-lit
 RUN ninja check-mlir
 RUN ninja install
+RUN ninja -t clean
 
 RUN rm -rf /opt/llvm-build
 
