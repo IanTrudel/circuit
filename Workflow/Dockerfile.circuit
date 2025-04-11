@@ -1,25 +1,50 @@
 # Building the final image
 FROM ghcr.io/iantrudel/circuit:googletest AS googletest
-FROM ghcr.io/iantrudel/circuit:llvm AS llvm
 FROM ghcr.io/iantrudel/circuit:slang AS slang
 FROM ghcr.io/iantrudel/circuit:circt AS circt
-FROM ubuntu:22.04 AS circuit
+FROM ubuntu:24.04 AS circuit
 
 RUN apt-get update && apt-get install -y \
    git cmake ninja-build build-essential pkg-config \
    libedit-dev libreadline-dev libncurses5-dev libxml2-dev libsqlite3-dev zlib1g-dev \
    python3 python3-pip python3-setuptools \
-   zsh curl unzip doxygen graphviz
+   zsh curl unzip doxygen graphviz figlet
 
-RUN pip3 install psutil pybind11 setuptools lit
+# Remove EXTERNALLY-MANAGED marker (PEP 668)
+RUN rm -f /usr/lib/python3.*/EXTERNALLY-MANAGED
+
+RUN pip3 install psutil pybind11 setuptools
 
 COPY --from=googletest /opt/googletest/googletest/include /usr/local/include
 COPY --from=googletest /opt/googletest/build/lib /usr/local/lib
-COPY --from=llvm /opt/llvm /opt/llvm
 COPY --from=slang /opt/slang /opt/slang
 COPY --from=circt /opt/circt /opt/circt
+COPY --from=circt /opt/llvm /opt/llvm
+COPY --from=circt /opt/circt/llvm/llvm/utils /opt/llvm/utils
+
+RUN pip3 install /opt/llvm/utils/lit
 
 ENV PATH="/opt/llvm/bin:/opt/circt/bin:/opt/slang/bin:$PATH"
 
-RUN mkdir -p /workspace
+RUN mkdir -p /opt/testsuite/
+COPY Workflow/testsuite /opt/testsuite/
+
+WORKDIR /opt/testsuite/sv
+RUN circt-translate --import-verilog logic.v -o logic.mlir
+RUN circt-opt logic.mlir --canonicalize --cse -o logic_opt.mlir
+RUN circt-opt logic_opt.mlir --convert-moore-to-core --export-verilog > logic_out.v
+
+RUN set -uex; \
+   curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh -o install.sh; \
+   sh ./install.sh; \
+   rm ./install.sh
+RUN sed -i 's/robbyrussell/dieter/g' /root/.zshrc
+
+ENV HOSTNAME=circuit
+RUN echo 'export HOSTNAME=$HOSTNAME' >> /root/.zshrc && \
+    echo 'PROMPT="%F{blue}[$HOSTNAME]%f %~ %# "' >> /root/.zshrc
+
+RUN echo "\nfiglet -f mini s h o r t c i r c u i t" >> /root/.zshrc
+
+WORKDIR /workspace
 CMD ["/usr/bin/zsh"]

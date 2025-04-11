@@ -1,3 +1,5 @@
+FIRRTL version 2.0.0
+
 circuit Foo :
   module Foo :
     input x : UInt<1>

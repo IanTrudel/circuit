@@ -1,3 +1,5 @@
+FIRRTL version 2.0.0
+
 circuit Adder :
   module Adder :
     input a : UInt<8>

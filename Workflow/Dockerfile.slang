@@ -8,8 +8,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /opt
 RUN git clone https://github.com/MikePopoloski/slang.git --depth 1
 
-WORKDIR /opt/slang-build
-RUN cmake ../slang -DCMAKE_BUILD_TYPE=Release \
+WORKDIR /opt/slang/build
+RUN cmake .. -DCMAKE_BUILD_TYPE=Release \
    -DCMAKE_INSTALL_PREFIX=/opt/slang -DSLANG_INCLUDE_TOOLS=ON \
    -Wdev --log-level=VERBOSE
 
@@ -17,7 +17,7 @@ RUN cmake --build . --target install
 
 RUN ctest --output-on-failure
 
-RUN rm -rf /opt/slang-build
+RUN rm -rf /opt/slang/build
 
 ENV PATH="/opt/slang/bin:$PATH"
 

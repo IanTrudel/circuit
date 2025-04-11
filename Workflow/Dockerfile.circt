@@ -1,8 +1,7 @@
 # Building CIRCT
 FROM ghcr.io/iantrudel/circuit:googletest AS googletest
-FROM ghcr.io/iantrudel/circuit:llvm AS llvm
 FROM ghcr.io/iantrudel/circuit:slang AS slang
-FROM ubuntu:22.04 AS circt
+FROM ubuntu:24.04 AS circt
 
 RUN apt-get update && apt-get install -y \
    git cmake ninja-build build-essential g++ \
@@ -10,52 +9,74 @@ RUN apt-get update && apt-get install -y \
    libedit-dev libreadline-dev libncurses5-dev libxml2-dev \
    zlib1g-dev pkg-config libsqlite3-dev libz3-dev z3
 
-RUN pip3 install pybind11 setuptools lit
+# Remove EXTERNALLY-MANAGED marker (PEP 668)
+RUN rm -f /usr/lib/python3.*/EXTERNALLY-MANAGED
 
 ENV LLVM_DIR=/opt/llvm/lib/cmake/llvm
 ENV MLIR_DIR=/opt/llvm/lib/cmake/mlir
 ENV SLANG_DIR=/opt/slang/lib/cmake/slang
-ENV CMAKE_PREFIX_PATH="/opt/install/llvm;/opt/install/slang"
+ENV CMAKE_PREFIX_PATH="/opt/llvm;/opt/slang"
 
 RUN mkdir -p /opt
 
 WORKDIR /opt
-RUN git clone --depth=1 --recurse-submodules --shallow-submodules https://github.com/llvm/circt.git 
+RUN git clone https://github.com/llvm/circt.git --depth 1
 
 WORKDIR /opt/circt
+RUN git submodule update --init
 
 COPY --from=googletest /opt/googletest/googletest/include /usr/local/include
 COPY --from=googletest /opt/googletest/build/lib /usr/local/lib
-COPY --from=llvm /opt/llvm /opt/llvm
 COPY --from=slang /opt/slang /opt/slang
 
-RUN /opt/llvm/bin/llvm-lit --version || echo "the world has crumbled, again, sir!"
+WORKDIR llvm/build
+RUN pip3 install ../llvm/utils/lit
+RUN cmake -G Ninja ../llvm \
+   -DLLVM_ENABLE_PROJECTS="mlir;clang;clang-tools-extra" \
+   -DLLVM_TARGETS_TO_BUILD="host" \
+   -DLLVM_ENABLE_ASSERTIONS=ON \
+   -DLLVM_BUILD_UTILS=ON \
+   -DLLVM_BUILD_TESTS=ON \
+   -DLLVM_INSTALL_UTILS=ON \
+   -DLLVM_INSTALL_GTEST=ON \
+   -DLLVM_INCLUDE_TOOLS=ON \
+   -DLLVM_INCLUDE_TESTS=ON \
+   -DLLVM_USE_SPLIT_DWARF=ON \
+   -DCMAKE_BUILD_TYPE=Release \
+   -DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+   -DCMAKE_CXX_STANDARD=17 \
+   -DCMAKE_INSTALL_PREFIX=/opt/llvm \
+   -DMLIR_ENABLE_EXECUTION_ENGINE=ON
+RUN ninja
+RUN ninja check-llvm
+RUN ninja check-mlir
+RUN ninja check-lit
+RUN ninja install
 
-RUN pip install lit
+RUN diff -qr ./bin /opt/llvm/bin | grep "^Only in ./bin" | awk -F': ' '{print $2}' | while read file; do cp "./bin/$(basename "$file")" /opt/llvm/bin/; done
 
-WORKDIR /opt/circt-build
-
-RUN cmake -G Ninja ../circt \
+WORKDIR /opt/circt/build
+RUN cmake -G Ninja .. \
+   -DMLIR_DIR=$PWD/../llvm/build/lib/cmake/mlir \
+   -DLLVM_DIR=$PWD/../llvm/build/lib/cmake/llvm \
    -DCMAKE_BUILD_TYPE=Release \
    -DCIRCT_RELEASE_TAG_ENABLED=ON \
    -DCMAKE_INSTALL_PREFIX=/opt/circt \
    -DCMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH \
    -DCMAKE_CXX_STANDARD=17 \
    -DLLVM_USE_SPLIT_DWARF=ON \
-   -DCIRCT_SLANG_FRONTEND_ENABLED=ON \
-   -DPYTHON_EXECUTABLE=$(which python3) \
-   -DCIRCT_GTEST_AVAILABLE=ON
+   -DCIRCT_SLANG_FRONTEND_ENABLED=ON
 RUN ninja
 RUN ninja check-circt
 RUN ninja install
 RUN ninja -t clean
 
-RUN rm -rf /opt/circt-build
+RUN rm -rf /opt/circt/build /opt/circt/llvm/build
 
-ENV PATH="/opt/circt/bin:$PATH"
+ENV PATH="/opt/circt/bin:/opt/llvm/bin:/opt/slang/bin:$PATH"
 
 RUN mkdir -p /opt/testsuite/
 COPY Workflow/testsuite /opt/testsuite/
-RUN firtool /opt/testsuite/firtool/simple.fir > /dev/null
+RUN firtool --format=fir /opt/testsuite/firtool/simple.fir > /dev/null
 RUN firtool /opt/testsuite/firtool/full.fir > /dev/null
 
